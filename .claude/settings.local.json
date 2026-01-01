@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(.venvScriptspython.exe -m pip install --upgrade --force-reinstall cryptography pyjwt supabase)",
+      "Bash(\".venv\\Scripts\\python.exe\" app.py)"
+    ]
+  }
+}

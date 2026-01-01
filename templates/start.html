@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>问道长生 - 宣纸水墨版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/ink.css">
+</head>
+
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <!-- 0. 初始入口 (Gate) -->
+    <div id="ui-gate" class="w-full max-w-xl text-center space-y-16 animate-fade-in">
+        <header class="relative">
+            <h1 class="text-5xl md:text-7xl font-black tracking-[0.4em] uppercase mb-4 text-ink-black">问道长生</h1>
+            <p class="text-[10px] opacity-30 tracking-[1.5em] uppercase">Seek Path to Immortality</p>
+            <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-40 h-40 bg-gold/5 rounded-full blur-3xl -z-10">
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <button onclick="enterAsGuest()" class="ink-card group hover:border-ink-black transition-all">
+                <div class="text-2xl font-black mb-2">初入仙途</div>
+                <div class="text-[10px] opacity-40 uppercase tracking-widest">游客身份 / 瞬息体验</div>
+            </button>
+            <button onclick="showAuth()" class="ink-card group hover:border-gold transition-all">
+                <div class="text-2xl font-black mb-2 text-ink-black">感应因果</div>
+                <div class="text-[10px] opacity-40 uppercase tracking-widest">正式账号 / 宿命存档</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- 1. 认证页面 (Auth) -->
+    <div id="ui-auth" class="hidden w-full max-w-sm ink-card">
+        <nav class="flex border-b border-ink/5 mb-8">
+            <button onclick="switchAuthTab('login')" id="tab-login"
+                class="flex-1 py-4 text-sm font-bold tracking-widest border-b-2 border-ink-black">已有道号</button>
+            <button onclick="switchAuthTab('register')" id="tab-register"
+                class="flex-1 py-4 text-sm font-bold tracking-widest opacity-30">开辟仙路</button>
+        </nav>
+        <div class="space-y-6">
+            <div id="form-login" class="space-y-4">
+                <input type="text" id="login-user" placeholder="道号" class="ink-input">
+                <input type="password" id="login-pass" placeholder="道印" class="ink-input">
+                <button onclick="submitLogin()" class="btn-ink btn-ink-primary w-full mt-4">踏入洞府</button>
+            </div>
+            <div id="form-register" class="hidden space-y-4">
+                <input type="text" id="reg-user" placeholder="起道号" class="ink-input">
+                <input type="password" id="reg-pass" placeholder="立道印" class="ink-input">
+                <button onclick="submitRegister()" class="btn-ink btn-ink-primary w-full mt-4">确认命理</button>
+            </div>
+            <div class="text-center pt-4">
+                <button onclick="backToGate()" class="text-[10px] opacity-30 hover:opacity-100 hover:text-ink-black">←
+                    返回入口</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 建号页面 (Create) -->
+    <div id="ui-create" class="hidden w-full max-w-5xl space-y-10 animate-fade-in py-10">
+        <header class="text-center">
+            <h2 class="text-3xl font-black tracking-[0.2em]">重塑真身</h2>
+            <div class="w-12 h-1 bg-ink-black mx-auto mt-4"></div>
+            <button onclick="backToGate()" class="text-[10px] opacity-30 hover:opacity-100 hover:text-ink-black mt-4">← 返回入口</button>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <!-- 灵根感应 -->
+            <div class="lg:col-span-8 space-y-6">
+                <div class="ink-card">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-sm font-black text-ink-black uppercase tracking-widest">01 · 先天灵根感应</h3>
+                        <button onclick="randomizeRoot()" id="btn-randomize-root"
+                            class="btn-ink btn-ink-outline h-8 px-4 text-[10px]">随机灵根抽取 (3/3)</button>
+                    </div>
+                    <div id="root-container" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <!-- JS Loaded -->
+                    </div>
+                    <div id="root-desc" class="mt-6 p-4 bg-ink-black/5 rounded text-xs leading-relaxed opacity-60">
+                        正在沟通天地，请先点击"随机灵根抽取"按钮...
+                    </div>
+                </div>
+            </div>
+
+            <!-- 性别、家境与道点 -->
+            <div class="lg:col-span-4 space-y-6">
+                <div class="ink-card">
+                    <h3 class="text-[10px] font-black opacity-30 mb-6 uppercase tracking-widest">02 · 出身家境</h3>
+                    <div class="grid grid-cols-2 gap-3" id="background-grid">
+                        <!-- JS Loaded -->
+                    </div>
+                    <div id="background-desc" class="mt-4 p-3 bg-ink-black/5 rounded text-[10px] leading-relaxed opacity-60">
+                        请选择你的家境...</div>
+                </div>
+
+                <div class="ink-card">
+                    <h3 class="text-[10px] font-black opacity-30 mb-6 uppercase tracking-widest">03 · 身外之象</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="setGender('male')" id="gender-male"
+                            class="btn-ink btn-ink-primary text-xs">男</button>
+                        <button onclick="setGender('female')" id="gender-female"
+                            class="btn-ink btn-ink-outline text-xs">女</button>
+                    </div>
+                </div>
+
+                <div class="ink-card">
+                    <h3 class="text-[10px] font-black opacity-30 mb-6 uppercase tracking-widest">04 · 天数分配</h3>
+                    <div class="flex justify-between items-end mb-8">
+                        <div>
+                            <div class="text-[10px] opacity-40 uppercase tracking-tighter">剩余道点</div>
+                            <div id="ui-points" class="text-5xl font-black text-ink-black">10</div>
+                        </div>
+                        <div class="text-[10px] opacity-20 text-right max-w-[150px]">
+                            注：机缘决定气数；悟性决定进益；洞察决定破绽。
+                        </div>
+                    </div>
+                    <div class="space-y-5" id="stat-steppers">
+                        <!-- Stat items -->
+                    </div>
+                </div>
+
+                <button onclick="startJourney()" class="btn-ink btn-ink-gold w-full h-16 text-lg">正式踏入仙路</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="hint" class="fixed bottom-10 left-1/2 -translate-x-1/2 text-danger text-xs h-4 font-bold"></div>
+
+    <!-- 命理穿梭 (Loading Overlay) -->
+    <div id="overlay"
+        class="fixed inset-0 bg-paper-bg z-50 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-1000">
+        <div class="relative">
+            <div class="text-ink-black text-3xl font-black tracking-[1em] mb-12 ml-[1em] animate-pulse relative z-10">
+                命理流转中</div>
+            <div class="absolute -top-4 -left-4 w-12 h-12 bg-gold/10 rounded-full animate-ping"></div>
+        </div>
+        <div class="w-64 h-1 bg-ink-black/5 relative overflow-hidden">
+            <div id="overlay-progress" class="absolute top-0 left-0 h-full bg-ink-black transition-all duration-300"
+                style="width: 0%"></div>
+        </div>
+    </div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/config.js"></script>
+    <script src="/static/js/start.js"></script>
+</body>
+
+</html>

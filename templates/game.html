@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>问道长生 - 洞府</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/ink.css">
+    <style>
+        /* 局部微调 */
+        .tab-btn-active {
+            color: var(--gold);
+            border-bottom: 2px solid var(--ink-black);
+            background: rgba(26, 26, 26, 0.05);
+        }
+
+        .adventure-viewport {
+            background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* 卷轴容器 */
+        .scroll-container {
+            mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col overflow-hidden">
+
+    <!-- 顶部状态栏 -->
+    <header class="h-16 border-b border-ink/5 flex items-center justify-between px-6 z-30 bg-white/40 backdrop-blur-md">
+        <div class="flex items-center gap-4">
+            <button onclick="openDrawer('char')" class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full border border-ink/10 bg-white/5 flex items-center justify-center font-bold text-ink-black overflow-hidden"
+                    id="ui-avatar">
+                    仙
+                </div>
+                <div class="text-left">
+                    <div id="ui-name" class="text-xs font-black text-ink-black">道号感应中</div>
+                    <div id="ui-realm" class="text-[9px] opacity-40">凡人 · 凡躯</div>
+                </div>
+            </button>
+        </div>
+
+        <!-- 凡人时期隐藏修为条，进入开元才显示 -->
+        <div class="flex-1 max-w-sm px-8 hidden md:block" id="ui-exp-box" style="display: none;">
+            <div class="flex justify-between items-end mb-1 text-[9px]">
+                <span class="opacity-30 uppercase tracking-widest">修为进度</span>
+                <span id="ui-exp-pct" class="font-black text-ink-black">0%</span>
+            </div>
+            <div class="ink-progress-container">
+                <div id="ui-exp-bar" class="ink-progress-fill"></div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-6">
+            <div class="text-right hidden sm:block">
+                <div class="text-[9px] opacity-30 uppercase">灵石</div>
+                <div id="ui-stones" class="text-xs font-black text-gold">0</div>
+            </div>
+            <button onclick="handleLogout()"
+                class="btn-ink btn-ink-outline h-8 px-4 text-[10px]">退出登录</button>
+        </div>
+    </header>
+
+    <main class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+
+        <!-- [PC 左侧] 命数与功法 -->
+        <aside class="hidden md:flex w-72 flex-col gap-4 p-6 border-r border-ink/5 overflow-y-auto">
+            <div class="ink-card p-5">
+                <h3
+                    class="text-[10px] font-black opacity-30 uppercase tracking-[0.3em] mb-4 border-b border-ink/5 pb-2">
+                    先天命数</h3>
+                <div id="ui-stats-grid" class="grid grid-cols-3 gap-2 text-center">
+                    <!-- JS Loaded -->
+                </div>
+            </div>
+            <div class="ink-card p-5 flex-1 flex flex-col">
+                <h3
+                    class="text-[10px] font-black opacity-30 uppercase tracking-[0.3em] mb-4 border-b border-ink/5 pb-2">
+                    已习功法</h3>
+                <div id="ui-methods" class="flex-1 space-y-2 overflow-y-auto">
+                    <!-- JS Loaded -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- [中心视窗] -->
+        <section class="flex-1 flex flex-col overflow-hidden relative adventure-viewport">
+            <!-- 历练/修炼主画面 -->
+            <div id="view-main" class="flex-1 p-6 flex flex-col items-center justify-center relative">
+
+                <!-- 历练专属卷轴视图 (Default Hidden) -->
+                <div id="ui-adventure-scroll"
+                    class="hidden w-full max-w-4xl h-80 relative flex items-center justify-center">
+                    <div
+                        class="scroll-container w-full h-64 border-y border-ink/10 overflow-hidden relative bg-white/30">
+                        <div id="adventure-bg"
+                            class="absolute inset-0 flex items-center justify-center transition-all duration-1000">
+                            <!-- 历练场景动画 -->
+                        </div>
+                        <div id="adventure-man" class="absolute bottom-10 left-1/2 -translate-x-1/2 text-4xl">👤</div>
+                    </div>
+                    <div
+                        class="absolute -left-4 top-0 bottom-0 w-8 bg-ink-black rounded-full border-4 border-gold/20 shadow-xl">
+                    </div>
+                    <div
+                        class="absolute -right-4 top-0 bottom-0 w-8 bg-ink-black rounded-full border-4 border-gold/20 shadow-xl">
+                    </div>
+                </div>
+
+                <!-- 打坐/静止视图 -->
+                <div id="ui-static-view" class="text-center space-y-4">
+                    <div class="text-8xl opacity-5 select-none font-black italic">TAO</div>
+                    <h2 id="ui-status-title" class="text-3xl font-black tracking-[0.6em] text-ink-black ml-[0.6em]">静心凝神
+                    </h2>
+                    <p id="ui-status-desc" class="text-xs opacity-40 leading-loose max-w-xs mx-auto">
+                        心无挂碍，意守丹田。于方寸之境，感悟诸天造化。</p>
+                </div>
+
+                <!-- 结果弹窗 (临时的水墨效果) -->
+                <div id="ui-event-toast"
+                    class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-0 transition-all duration-500 z-20">
+                    <div class="ink-card border-gold/40 shadow-2xl shadow-gold/10">
+                        <div id="event-title" class="text-gold text-lg font-black mb-1">机缘降临</div>
+                        <div id="event-desc" class="text-xs opacity-60">你在一处残碑前顿悟了。</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [PC 底部日志] -->
+            <div class="hidden md:block h-48 border-t border-ink/5 p-4 bg-white/40 overflow-hidden">
+                <div id="ui-log" class="h-full overflow-y-auto text-[11px] leading-6 px-4 space-y-1">
+                    <!-- Logs -->
+                </div>
+            </div>
+        </section>
+
+        <!-- [PC 右侧] 操作 -->
+        <aside class="hidden md:flex w-80 flex-col gap-4 p-6 border-l border-ink/5">
+            <div class="ink-card p-6 flex flex-col gap-4">
+                <h3 class="text-[10px] font-black opacity-30 uppercase tracking-[0.4em] text-center mb-4">洞府指令</h3>
+                <button onclick="doAction('meditate')" id="btn-meditate"
+                    class="btn-ink btn-ink-primary w-full">打坐修炼</button>
+                <button onclick="doAction('adventure')" id="btn-adventure"
+                    class="btn-ink btn-ink-outline w-full">历练寻机</button>
+                <button id="btn-break" disabled onclick="showBreakModal()"
+                    class="btn-ink btn-ink-gold w-full opacity-30">境界突破</button>
+
+                <hr class="ink-divider op-5 my-2">
+
+                <button onclick="openDrawer('story')" class="btn-ink btn-ink-ghost w-full">修仙传记</button>
+                <button onclick="openDrawer('inv')" class="btn-ink btn-ink-ghost w-full">识海背包</button>
+                <button onclick="openDrawer('stones')" class="btn-ink btn-ink-ghost w-full">灵石宝库</button>
+                <button onclick="openDrawer('mansion')" class="btn-ink btn-ink-ghost w-full">洞府炼制</button>
+                <button onclick="doAction('body')" class="btn-ink btn-ink-ghost w-full">肉身淬炼</button>
+            </div>
+
+            <div class="ink-card p-5 flex-1 overflow-y-auto">
+                <h3 class="text-[10px] font-black opacity-30 uppercase tracking-widest border-b border-ink/5 pb-2 mb-4">
+                    当前状态</h3>
+                <div id="ui-status-detail" class="text-[11px] space-y-4">
+                    <!-- JS Loaded (HP, MP, Body, etc.) -->
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- [Mobile Tab Bar] -->
+    <nav class="md:hidden h-20 border-t border-ink/5 grid grid-cols-4 bg-paper-bg z-30">
+        <button onclick="switchMobileTab('meditate')" id="m-tab-meditate"
+            class="flex flex-col items-center justify-center gap-1 transition-all tab-btn-active">
+            <div class="text-xl">✨</div>
+            <span class="text-[10px] font-bold">修炼</span>
+        </button>
+        <button onclick="switchMobileTab('adventure')" id="m-tab-adventure"
+            class="flex flex-col items-center justify-center gap-1 transition-all opacity-30">
+            <div class="text-xl">🏯</div>
+            <span class="text-[10px] font-bold">历练</span>
+        </button>
+        <button onclick="openDrawer('inv')"
+            class="flex flex-col items-center justify-center gap-1 transition-all opacity-30">
+            <div class="text-xl">🎒</div>
+            <span class="text-[10px] font-bold">背包</span>
+        </button>
+        <button onclick="openDrawer('menu')"
+            class="flex flex-col items-center justify-center gap-1 transition-all opacity-30">
+            <div class="text-xl">📖</div>
+            <span class="text-[10px] font-bold">菜单</span>
+        </button>
+    </nav>
+
+    <!-- [Drawer] 信息面板 -->
+    <div id="ui-drawer" class="fixed inset-0 z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div onclick="closeDrawer()" class="absolute inset-0 bg-ink-black/20 backdrop-blur-sm"></div>
+        <div id="drawer-panel"
+            class="absolute top-0 right-0 h-full w-[85vw] md:w-96 bg-paper-bg border-l border-ink/10 p-8 flex flex-col transform translate-x-full transition-transform duration-300">
+            <div class="flex justify-between items-center mb-10">
+                <h2 id="drawer-title" class="text-xl font-black text-ink-black tracking-widest uppercase">信息列表</h2>
+                <button onclick="closeDrawer()"
+                    class="w-10 h-10 flex items-center justify-center opacity-30 text-xl">✕</button>
+            </div>
+            <div id="drawer-body" class="flex-1 overflow-y-auto space-y-6">
+                <!-- Content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- [Modal: MiniGames] -->
+    <dialog id="modal-game" class="modal">
+        <div class="modal-box bg-paper-bg border border-ink/10 p-0 max-w-2xl overflow-hidden rounded-none shadow-2xl">
+            <div class="p-6 border-b border-ink/5 flex justify-between items-center">
+                <div class="text-left">
+                    <h3 id="game-title" class="text-lg font-black text-ink-black tracking-widest uppercase">神识推演</h3>
+                    <p id="game-desc" class="text-[9px] opacity-40 mt-1 uppercase">Breach the Void</p>
+                </div>
+                <div id="game-timer" class="text-2xl font-mono text-ink-black/20">00:00</div>
+            </div>
+            <div id="game-content" class="min-h-[400px] flex items-center justify-center p-10 bg-white/30">
+                <!-- Content -->
+            </div>
+            <div class="p-4 border-t border-ink/5 text-center">
+                <button onclick="closeModalGame()"
+                    class="text-[10px] opacity-20 hover:opacity-100 uppercase italic">中断神识</button>
+            </div>
+        </div>
+    </dialog>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/config.js"></script>
+    <script src="/static/js/ui.js"></script>
+    <script src="/static/js/adventure.js"></script>
+    <script src="/static/js/crafting.js"></script>
+    <script src="/static/js/game-core.js"></script>
+</body>
+
+</html>
